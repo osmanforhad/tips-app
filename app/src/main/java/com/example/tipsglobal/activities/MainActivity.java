@@ -1,6 +1,9 @@
 package com.example.tipsglobal.activities;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -11,14 +14,20 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.example.tipsglobal.R;
+import com.example.tipsglobal.adapters.NotesAdapter;
 import com.example.tipsglobal.database.NotesDatabase;
 import com.example.tipsglobal.entities.Note;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     public static final int REQUEST_CODE_ADD_NOTE = 1;
+
+    private RecyclerView notesRecyclerView;
+    private List<Note> noteList;
+    private NotesAdapter notesAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +50,17 @@ public class MainActivity extends AppCompatActivity {
 
         });//end of setOnClickListener
 
-        getNotes();
+        /* initial xml UI **/
+        notesRecyclerView = findViewById(R.id.notesRecyclerView);
+        notesRecyclerView.setLayoutManager(
+                new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL)
+        );
+
+        noteList = new ArrayList<>();
+        notesAdapter = new NotesAdapter(noteList);
+        notesRecyclerView.setAdapter(notesAdapter);
+
+        getNotes();//calling the method
 
     }//end of the onCreate method
 
@@ -59,7 +78,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected void onPostExecute(List<Note> notes) {
                 super.onPostExecute(notes);
-                Log.d("MY_NOTES", notes.toString());
+                if(noteList.size() == 0){
+                    noteList.addAll(notes);
+                    notesAdapter.notifyDataSetChanged();
+                }else {
+                    noteList.add(0,notes.get(0));
+                    notesAdapter.notifyItemInserted(0);
+                }
+                notesRecyclerView.smoothScrollToPosition(0);
+
             }//end of the onPostExecute method
 
         }//end of the GetNotesTask Class
@@ -67,5 +94,14 @@ public class MainActivity extends AppCompatActivity {
         new GetNotesTask().execute();
 
     }//end of the getNotes method
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == REQUEST_CODE_ADD_NOTE && requestCode == RESULT_OK){
+            getNotes();//calling the method
+        }
+    }//end of the onActivityResult method
 
 }//end of the main class
