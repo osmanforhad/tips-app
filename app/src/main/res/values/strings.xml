@@ -1,10 +1,11 @@
 <resources>
-    <string name="app_name">Tips Global</string>
-    <string name="tips_global">Tips Global</string>
+    <string name="app_name">Note Personalization</string>
+    <string name="tips_global">Note Personalization</string>
     <string name="search_tips">Search Tips</string>
     <string name="note_title">Note Title</string>
     <string name="note_subtitle">Note Subtitle</string>
     <string name="type_note_here">Type note here...</string>
     <string name="miscellaneous">Miscellaneous</string>
     <string name="pick_color">pick Color</string>
+    <string name="add_image">Add Image</string>
 </resources>
