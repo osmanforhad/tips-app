@@ -2,6 +2,7 @@ package com.example.tipsglobal.activities;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -14,12 +15,16 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Patterns;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -43,12 +48,16 @@ public class CreateNoteActivity extends AppCompatActivity {
     private TextView textDateTime;
     private View viewSubtitleIndicator;
     private ImageView imageNote;
+    private TextView textWebURL;
+    private LinearLayout layoutWebURL;
 
     private String selectedNoteColor;
     private String selectedImagePath;
 
     private static final int REQUEST_CODE_STORAGE_PERMISSION = 1;
     private static final int REQUEST_CODE_SELECT_IMAGE = 2;
+
+    private AlertDialog dialogAddURL;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +84,8 @@ public class CreateNoteActivity extends AppCompatActivity {
         textDateTime = findViewById(R.id.textDateTime);
         viewSubtitleIndicator = findViewById(R.id.viewSubtitleIndicator);
         imageNote = findViewById(R.id.imageNote);
+        textWebURL = findViewById(R.id.textWebURL);
+        layoutWebURL = findViewById(R.id.layoutWebUrl);
 
         textDateTime.setText(
                 new SimpleDateFormat("EEEE, dd MMMM yyyy HH:mm a", Locale.getDefault())
@@ -122,6 +133,13 @@ public class CreateNoteActivity extends AppCompatActivity {
         note.setDateTime(textDateTime.getText().toString());
         note.setColor(selectedNoteColor);
         note.setImagePath(selectedImagePath);
+
+        /* check layoutWebURL
+         * is
+         * visible or note **/
+        if (layoutWebURL.getVisibility() == View.VISIBLE) {
+            note.setWebLink(textWebURL.getText().toString());
+        }//end of the if condition
 
         /* Room doesn't allow database operation on the Main thread
          * That's why i am using async task to save note**/
@@ -267,6 +285,18 @@ public class CreateNoteActivity extends AppCompatActivity {
 
         });//end of the setOnClickListener
 
+        /* initial the xml Ui
+         * and
+         * make it clickable **/
+        layoutMiscellaneous.findViewById(R.id.layoutAddUrl).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                showAddURLDialog();
+            }//end of the onClick method
+
+        });//end of the setOnClickListener
+
     }//end of the initMiscellaneous method
 
     /* method for subtitle indicator color **/
@@ -342,5 +372,61 @@ public class CreateNoteActivity extends AppCompatActivity {
         return filePath;
 
     }//end of the getPathFromUri method
+
+
+    private void showAddURLDialog() {
+        if (dialogAddURL == null) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(CreateNoteActivity.this);
+            View view = LayoutInflater.from(this).inflate(
+                    R.layout.layout_add_url,
+                    (ViewGroup) findViewById(R.id.layoutAddUrlContainer)
+            );
+            builder.setView(view);
+
+            dialogAddURL = builder.create();
+
+            if (dialogAddURL.getWindow() != null) {
+                dialogAddURL.getWindow().setBackgroundDrawable(new ColorDrawable(0));
+            }//end of the if condition
+
+            final EditText inputURL = view.findViewById(R.id.inputURL);
+            inputURL.requestFocus();
+
+            /* initial the xml UI
+             * and
+             * make it clickable**/
+            view.findViewById(R.id.textAdd).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (inputURL.getText().toString().trim().isEmpty()) {
+                        Toast.makeText(CreateNoteActivity.this, "Enter URL", Toast.LENGTH_SHORT).show();
+                    } else if (!Patterns.WEB_URL.matcher(inputURL.getText().toString()).matches()) {
+                        Toast.makeText(CreateNoteActivity.this, "Enter Valid URL", Toast.LENGTH_SHORT).show();
+                    } else {
+                        textWebURL.setText(inputURL.getText().toString());
+                        layoutWebURL.setVisibility(View.VISIBLE);
+                        dialogAddURL.dismiss();
+                    }
+
+                }//end of the onClick method
+
+            });//end of the setOnClickListener
+
+            /* initial the xml UI
+             * and
+             * make it clickable**/
+            view.findViewById(R.id.textCancel).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    dialogAddURL.dismiss();
+                }//end of the onClick method
+
+            });//end of the setOnClickListener
+
+        }//end of the main if condition
+
+        dialogAddURL.show();
+
+    }//end of the showAddURLDialog method
 
 }//end of the main class

@@ -102,7 +102,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
 
         }//end of the setNote method
 
-        
+
 
     }//end of the view holder class
 
