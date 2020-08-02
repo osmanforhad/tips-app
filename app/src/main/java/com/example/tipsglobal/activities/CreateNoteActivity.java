@@ -58,6 +58,7 @@ public class CreateNoteActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_SELECT_IMAGE = 2;
 
     private AlertDialog dialogAddURL;
+    private AlertDialog dialogDeleteNote;
 
     private Note alreadyAvailableNote;
 
@@ -116,7 +117,7 @@ public class CreateNoteActivity extends AppCompatActivity {
         }//end of the if condition
 
         /* initial the xml UI
-        * with clickable functionality **/
+         * with clickable functionality **/
         findViewById(R.id.imageRemoveURL).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -199,31 +200,31 @@ public class CreateNoteActivity extends AppCompatActivity {
         }//end of the if condition
 
         /* checked the selected note
-        *for update
-        * is null or not **/
-        if (alreadyAvailableNote != null){
+         *for update
+         * is null or not **/
+        if (alreadyAvailableNote != null) {
             note.setId(alreadyAvailableNote.getId());
         }//end of the if condition
 
-            /* Room doesn't allow database operation on the Main thread
-             * That's why i am using async task to save note**/
-            @SuppressLint("StaticFieldLeak")
-            class SaveNoteTask extends AsyncTask<Void, Void, Void> {
-                @Override
-                protected Void doInBackground(Void... voids) {
-                    NotesDatabase.getDatabase(getApplicationContext()).noteDao().insertNote(note);
-                    return null;
-                }//end of the doInBackground method
+        /* Room doesn't allow database operation on the Main thread
+         * That's why i am using async task to save note**/
+        @SuppressLint("StaticFieldLeak")
+        class SaveNoteTask extends AsyncTask<Void, Void, Void> {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                NotesDatabase.getDatabase(getApplicationContext()).noteDao().insertNote(note);
+                return null;
+            }//end of the doInBackground method
 
-                @Override
-                protected void onPostExecute(Void aVoid) {
-                    super.onPostExecute(aVoid);
-                    Intent intent = new Intent();
-                    setResult(RESULT_OK, intent);
-                    finish();
-                }//end of the onPostExecute method
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                Intent intent = new Intent();
+                setResult(RESULT_OK, intent);
+                finish();
+            }//end of the onPostExecute method
 
-            }//end of the SaveNoteTask class
+        }//end of the SaveNoteTask class
 
         new SaveNoteTask().execute();
 
@@ -382,7 +383,83 @@ public class CreateNoteActivity extends AppCompatActivity {
 
         });//end of the setOnClickListener
 
+        /* condition for make visible
+         * Delete functionality **/
+        if (alreadyAvailableNote != null) {
+            layoutMiscellaneous.findViewById(R.id.layoutDeleteNote).setVisibility(View.VISIBLE);
+            layoutMiscellaneous.findViewById(R.id.layoutDeleteNote).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                    showDeleteNoteDialog();//calling the method
+                }//end of the onClick method
+
+            });//end of the setOnClickListener
+
+        }//end of the if condition
+
     }//end of the initMiscellaneous method
+
+
+    /* method for delete dialog box **/
+    private void showDeleteNoteDialog() {
+
+        if (dialogDeleteNote == null) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(CreateNoteActivity.this);
+            View view = LayoutInflater.from(this).inflate(
+                    R.layout.layout_delete_note,
+                    (ViewGroup) findViewById(R.id.layoutDeleteNoteContainer)
+            );
+            builder.setView(view);
+            dialogDeleteNote = builder.create();
+            if (dialogDeleteNote.getWindow() != null) {
+                dialogDeleteNote.getWindow().setBackgroundDrawable(new ColorDrawable(0));
+            }//end of the nested if condition
+
+            view.findViewById(R.id.textDeleteNote).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    @SuppressLint("StaticFieldLeak")
+                    class DeleteNoteTask extends AsyncTask<Void, Void, Void> {
+
+                        @Override
+                        protected Void doInBackground(Void... voids) {
+                            NotesDatabase.getDatabase(getApplicationContext()).noteDao()
+                                    .deleteNote(alreadyAvailableNote);
+                            return null;
+                        }//end of the doInBackground method
+
+                        @Override
+                        protected void onPostExecute(Void aVoid) {
+                            super.onPostExecute(aVoid);
+                            Intent intent = new Intent();
+                            intent.putExtra("isNoteDeleted", true);
+                            setResult(RESULT_OK, intent);
+                            finish();
+                        }//end of the onPostExecute method
+
+                    }//end of the sub class DeleteNoteTask
+
+                    new DeleteNoteTask().execute();
+
+                }//end of the onClick method
+
+            });//end of the setOnClickListener
+
+            view.findViewById(R.id.textCancel).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    dialogDeleteNote.dismiss();
+                }//end of the onClick method
+
+            });//end of the setOnClickListener
+
+        }//end of the main if condition
+
+        dialogDeleteNote.show();
+
+    }//end of the showDeleteNoteDialog method
 
     /* method for subtitle indicator color **/
     private void setSubtitleIndicatorColor() {
