@@ -59,6 +59,8 @@ public class CreateNoteActivity extends AppCompatActivity {
 
     private AlertDialog dialogAddURL;
 
+    private Note alreadyAvailableNote;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -106,11 +108,41 @@ public class CreateNoteActivity extends AppCompatActivity {
         selectedNoteColor = "#333333";
         selectedImagePath = "";
 
+        /* checked is received key
+         * from previous screen **/
+        if (getIntent().getBooleanExtra("isViewOrUpdate", false)) {
+            alreadyAvailableNote = (Note) getIntent().getSerializableExtra("note");/* received key from previous screen **/
+            setViewOrUpdateNote();//calling the method
+        }//end of the if condition
+
         initMiscellaneous();//calling the method
         setSubtitleIndicatorColor();//calling the method
 
     }//end of the onCreate method
 
+
+    private void setViewOrUpdateNote() {
+        inputNoteTitle.setText(alreadyAvailableNote.getTitle());
+        inputNoteSubtitle.setText(alreadyAvailableNote.getSubtitle());
+        inputNoteText.setText(alreadyAvailableNote.getNoteText());
+        textDateTime.setText(alreadyAvailableNote.getDateTime());
+
+        /*checked for image path is
+         * available or not  **/
+        if (alreadyAvailableNote.getImagePath() != null && !alreadyAvailableNote.getImagePath().trim().isEmpty()) {
+            imageNote.setImageBitmap(BitmapFactory.decodeFile(alreadyAvailableNote.getImagePath()));
+            imageNote.setVisibility(View.VISIBLE);
+            selectedImagePath = alreadyAvailableNote.getImagePath();
+        }//end of the if condition
+
+        /*checked for WebLink is
+         * available or not  **/
+        if (alreadyAvailableNote.getWebLink() != null && !alreadyAvailableNote.getWebLink().trim().isEmpty()) {
+            textWebURL.setText(alreadyAvailableNote.getWebLink());
+            layoutWebURL.setVisibility(View.VISIBLE);
+        }//end of the if condition
+
+    }//end of the setViewOrUpdateNote method
 
     private void saveNote() {
 
@@ -141,25 +173,32 @@ public class CreateNoteActivity extends AppCompatActivity {
             note.setWebLink(textWebURL.getText().toString());
         }//end of the if condition
 
-        /* Room doesn't allow database operation on the Main thread
-         * That's why i am using async task to save note**/
-        @SuppressLint("StaticFieldLeak")
-        class SaveNoteTask extends AsyncTask<Void, Void, Void> {
-            @Override
-            protected Void doInBackground(Void... voids) {
-                NotesDatabase.getDatabase(getApplicationContext()).noteDao().insertNote(note);
-                return null;
-            }//end of the doInBackground method
+        /* checked the selected note
+        *for update
+        * is null or not **/
+        if (alreadyAvailableNote != null){
+            note.setId(alreadyAvailableNote.getId());
+        }//end of the if condition
 
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
-                Intent intent = new Intent();
-                setResult(RESULT_OK, intent);
-                finish();
-            }//end of the onPostExecute method
+            /* Room doesn't allow database operation on the Main thread
+             * That's why i am using async task to save note**/
+            @SuppressLint("StaticFieldLeak")
+            class SaveNoteTask extends AsyncTask<Void, Void, Void> {
+                @Override
+                protected Void doInBackground(Void... voids) {
+                    NotesDatabase.getDatabase(getApplicationContext()).noteDao().insertNote(note);
+                    return null;
+                }//end of the doInBackground method
 
-        }//end of the SaveNoteTask class
+                @Override
+                protected void onPostExecute(Void aVoid) {
+                    super.onPostExecute(aVoid);
+                    Intent intent = new Intent();
+                    setResult(RESULT_OK, intent);
+                    finish();
+                }//end of the onPostExecute method
+
+            }//end of the SaveNoteTask class
 
         new SaveNoteTask().execute();
 
@@ -264,6 +303,27 @@ public class CreateNoteActivity extends AppCompatActivity {
             }//end of the onClick method
 
         });//end of the setOnClickListener
+
+        /* checked the note is going to updated
+         * is all ok or not **/
+        if (alreadyAvailableNote != null && alreadyAvailableNote.getColor() != null && !alreadyAvailableNote.getColor().trim().isEmpty()) {
+            switch (alreadyAvailableNote.getColor()) {
+                case "#FDBE3B":
+                    layoutMiscellaneous.findViewById(R.id.viewColor2).performClick();
+                    break;
+                case "#FF4842":
+                    layoutMiscellaneous.findViewById(R.id.viewColor3).performClick();
+                    break;
+                case "#3A52Fc":
+                    layoutMiscellaneous.findViewById(R.id.viewColor4).performClick();
+                    break;
+                case "#000000":
+                    layoutMiscellaneous.findViewById(R.id.viewColor5).performClick();
+                    break;
+
+            }//end of the switch case
+
+        }//end of the if condition
 
         /* initial the xml id **/
         layoutMiscellaneous.findViewById(R.id.layoutAddImage).setOnClickListener(new View.OnClickListener() {
