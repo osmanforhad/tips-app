@@ -115,6 +115,30 @@ public class CreateNoteActivity extends AppCompatActivity {
             setViewOrUpdateNote();//calling the method
         }//end of the if condition
 
+        /* initial the xml UI
+        * with clickable functionality **/
+        findViewById(R.id.imageRemoveURL).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                textWebURL.setText(null);
+                layoutWebURL.setVisibility(View.GONE);
+            }//end of the onClick method
+
+        });//end of the setOnClickListener
+
+        /* initial the xml UI
+         * with clickable functionality **/
+        findViewById(R.id.imageRemoveImage).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                imageNote.setImageBitmap(null);
+                imageNote.setVisibility(View.GONE);
+                findViewById(R.id.imageRemoveImage).setVisibility(View.GONE);
+                selectedImagePath = "";
+            }//end of the onClick method
+
+        });//end of the setOnClickListener
+
         initMiscellaneous();//calling the method
         setSubtitleIndicatorColor();//calling the method
 
@@ -132,6 +156,7 @@ public class CreateNoteActivity extends AppCompatActivity {
         if (alreadyAvailableNote.getImagePath() != null && !alreadyAvailableNote.getImagePath().trim().isEmpty()) {
             imageNote.setImageBitmap(BitmapFactory.decodeFile(alreadyAvailableNote.getImagePath()));
             imageNote.setVisibility(View.VISIBLE);
+            findViewById(R.id.imageRemoveImage).setVisibility(View.VISIBLE);
             selectedImagePath = alreadyAvailableNote.getImagePath();
         }//end of the if condition
 
@@ -401,6 +426,7 @@ public class CreateNoteActivity extends AppCompatActivity {
                         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
                         imageNote.setImageBitmap(bitmap);
                         imageNote.setVisibility(View.VISIBLE);
+                        findViewById(R.id.imageRemoveImage).setVisibility(View.VISIBLE);
 
                         selectedImagePath = getPathFromUri(selectedImageUri);
 
