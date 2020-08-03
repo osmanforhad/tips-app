@@ -3,6 +3,8 @@ package com.example.tipsglobal.adapters;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,20 +19,23 @@ import com.example.tipsglobal.entities.Note;
 import com.example.tipsglobal.listeners.NotesListener;
 import com.makeramen.roundedimageview.RoundedImageView;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
+import java.util.TimerTask;
 
 public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHolder> {
 
     private List<Note> notes;
     private NotesListener notesListener;
     private Timer timer;
-    private List<Note>
+    private List<Note> notesSource;
 
     /* start constructor method **/
     public NotesAdapter(List<Note> notes, NotesListener notesListener) {
         this.notes = notes;
         this.notesListener = notesListener;
+        notesSource = notes;
     }//end of the constructor method
 
     @NonNull
@@ -117,7 +122,47 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
         }//end of the setNote method
 
 
-
     }//end of the view holder class
+
+    /* method for search functionality **/
+    public void searchNotes(final String searchKeyword) {
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (searchKeyword.trim().isEmpty()) {
+                    notes = notesSource;
+                } else {
+                    ArrayList<Note> temp = new ArrayList<>();
+                    for (Note note : notesSource) {
+                        if (note.getTitle().toLowerCase().contains(searchKeyword.toLowerCase())
+                                || note.getSubtitle().toLowerCase().contains(searchKeyword.toLowerCase())
+                                || note.getNoteText().toLowerCase().contains(searchKeyword.toLowerCase())) {
+                            temp.add(note);
+                        }//end of the if condition
+
+                    }//end of the for loop
+
+                    notes = temp;
+                }
+
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        notifyDataSetChanged();
+                    }//end of the run method
+
+                });//end of the post Runnable
+            }
+        }, 500);
+
+    }//end of the searchNotes method
+
+    public void cancelTimer() {
+        if (timer != null) {
+            timer.cancel();
+        }//end of the if condition
+
+    }//end of the cancelTimer method
 
 }//end of the main class

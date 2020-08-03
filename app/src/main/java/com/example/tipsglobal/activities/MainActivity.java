@@ -9,8 +9,11 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.example.tipsglobal.R;
@@ -66,6 +69,29 @@ public class MainActivity extends AppCompatActivity implements NotesListener {
         notesRecyclerView.setAdapter(notesAdapter);
 
         getNotes(REQUEST_CODE_SHOW_NOTES, false);//calling the method
+
+        /* initial the xml UI **/
+        EditText inputSearch = findViewById(R.id.inputsearch);
+        inputSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }//end of the beforeTextChanged method
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                notesAdapter.cancelTimer();
+            }//end of the onTextChanged method
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (noteList.size() != 0) {
+                    notesAdapter.searchNotes(s.toString());
+                }//end of the if condition
+
+            }//end of the afterTextChanged method
+
+        });//end of the addTextChangedListener
 
     }//end of the onCreate method
 
